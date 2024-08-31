@@ -21,6 +21,7 @@ contract ERCStaker {
     error UserAlreadyStaked();
     error UserHasNotStaked();
     error InsufficientFunds();
+    error StakeNotMature();
 
     constructor(address _tokenAddress, address _owner) {
         owner = _owner;
@@ -66,6 +67,11 @@ contract ERCStaker {
         if(ledger[msg.sender] == 0) {revert UserHasNotStaked();}
 
         Staker memory _user = stakers[msg.sender];
+
+        if(block.timestamp < _user.timeStamp) {
+            revert StakeNotMature();
+        }
+        
         uint256 _time = (block.timestamp - _user.timeStamp) / (31e8);
         uint256 _totalAmount = ledger[_user.account] + ((ledger[_user.account] * rate * _time) / 100);
 
