@@ -27,6 +27,14 @@ contract ERCStaker {
         tokenAddress = _tokenAddress;
     }
 
+    function givePermission(uint256 _amount) external {
+        if(msg.sender == address(0)) { revert ZeroAddressDetected();}
+
+        if(_amount == 0) {revert ZeroAmoutDetected();}
+
+        IERC20(tokenAddress).approve(msg.sender, _amount);
+    }
+
     function deposit(uint256 _amount) external {
 
         if(msg.sender == address(0)) { revert ZeroAddressDetected();}
@@ -61,8 +69,7 @@ contract ERCStaker {
         uint256 _time = (block.timestamp - _user.timeStamp) / (31e8);
         uint256 _totalAmount = ledger[_user.account] + ((ledger[_user.account] * rate * _time) / 100);
 
-        (bool success,) = msg.sender.call{value : _totalAmount}("");
-        require(success, "failed withdrawal!");
+        IERC20(tokenAddress).transfer(msg.sender, _totalAmount);
 
         delete stakers[msg.sender];
         delete ledger[msg.sender];
